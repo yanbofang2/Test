@@ -1,0 +1,831 @@
+%%%%%%%%% MASTER -- compiles the 4 sections
+
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{amsthm}
+\usepackage{bbold}
+\usepackage{mathrsfs}
+\usepackage{cite}
+\usepackage{hyperref}
+
+\usepackage{physics}
+\usepackage{braket}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{simplewick}
+\usepackage{simpler-wick}
+\usepackage{caption}
+\usepackage{subcaption}
+% \usepackage{breqn}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagestyle{plain}                                                      %%
+%%%%%%%%%% EXACT 1in MARGINS %%%%%%%                                   %%
+\setlength{\textwidth}{6.5in}     %%                                   %%
+\setlength{\oddsidemargin}{0in}   %% (It is recommended that you       %%
+\setlength{\evensidemargin}{0in}  %%  not change these parameters,     %%
+\setlength{\textheight}{8.5in}    %%  at the risk of having your       %%
+\setlength{\topmargin}{0in}       %%  proposal dismissed on the basis  %%
+\setlength{\headheight}{0in}      %%  of incorrect formatting!!!)      %%
+\setlength{\headsep}{0in}         %%                                   %%
+\setlength{\footskip}{.5in}       %%                                   %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                   %%
+%\setlength{\parskip}{0.5\baselineskip}
+%\setlength{\parindent}{0in}
+%\renewcommand{\baselinestretch}{1.5}
+% \newcommand{\required}[1]{\section*{\hfil #1\hfil}}                    %%
+\renewcommand{\refname}{\hfil References Cited\hfil}                   %%
+% \renewcommand{\thesubsection}{\arabic{section}}
+% \renewcommand{\thesubsubsection}{\thesubsection.\arabic{subsubsection}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\mathchardef\mhyphen="2D
+
+%PUT YOUR MACROS HERE
+\newcommand{\vek}[1]{{\mathbf{#1}}}
+\newcommand{\x}{{\mathbf{r}}}
+% \newcommand{\ket}[1]{| #1 \rangle}
+% \newcommand{\bra}[1]{\langle #1 |}
+% \newcommand{\braket}[2]{\langle #1 | #2 \rangle}
+% \newcommand{\matel}[3]{\langle #1 | #2 | #3 \rangle}
+\newcommand{\alp}{\ensuremath{_{\alpha}}}
+\newcommand{\cor}{\ensuremath{_{\text{C}}}}
+\newcommand{\occ}{\mathrm{occ}}
+\newcommand{\vir}{\mathrm{vir}}
+\newcommand{\mx}{\mathrm{max}}
+\newcommand{\T}{\mathrm{T}}
+\newcommand{\saa}{\ensuremath{^{\alpha\alpha}}}
+\newcommand{\sab}{\ensuremath{^{\alpha\beta}}}
+\newcommand{\sba}{\ensuremath{^{\beta\alpha}}}
+\newcommand{\sbb}{\ensuremath{^{\beta\beta}}}
+\newcommand{\sss}{\ensuremath{^{\sigma\sigma}}}
+\newcommand{\ssS}{\ensuremath{^{\sigma\bar{\sigma}}}}
+\newcommand{\sSs}{\ensuremath{^{\bar{\sigma}\sigma}}}
+\newcommand{\sssp}{\ensuremath{^{\sigma\sigma'}}}
+\newcommand{\sabab}{\ensuremath{^{\alpha\beta\alpha\beta}}}
+\newcommand{\sbaba}{\ensuremath{^{\beta\alpha\beta\alpha}}}
+\newcommand{\saaaa}{\ensuremath{^{\alpha\alpha\alpha\alpha}}}
+\newcommand{\sbbbb}{\ensuremath{^{\beta\beta\beta\beta}}}
+\newcommand{\p}{\ensuremath{\bar{p}}}
+\newcommand{\q}{\ensuremath{\bar{q}}}
+\newcommand{\pf}{\ensuremath{\mathrm{pf}}}
+
+\DeclareSymbolFont{matha}{OML}{txmi}{m}{it}% txfonts
+\DeclareMathSymbol{\varv}{\mathord}{matha}{118}
+
+
+\newtheorem*{remark}{Remark}
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+
+% \title{\textbf{Algorithm for Solving HFB}}
+\title{\textbf{Robust Formulation of Projected Quasiparticle Self-Consistent Field}}
+\author{Guo P. Chen}
+\date{April 10, 2024\\Modified: April 12, 2024; June 27, 2024; March 5, 2025; May 28, 2025}
+
+
+\begin{document}
+
+\maketitle
+
+In PHFB and PHF, the generalized Fock matrix may become ill-defined for the same reason that the
+nonorthogonal Wick theorem fails. The same numerical issue also arises when we construct
+(generalized) Fock matrices for Jordan--Wigner (JW) transformed systems.
+In the existing derivation of the generalized Fock matrix, we first evaluate the PHF(B)
+energy using the nonorthogonal Wick's theorem and then express the generalized Fock
+matrix as the derivative of the energy with respect to the 1RDM.
+Combining this formalism with the robust Wick's theorem \cite{robustwick} is not straightforward.
+Here, I propose a new formulation of the generalized Fock matrix that it is compatible with
+the robust Wick's theorem. The key idea is to rewrite the elements of
+the generalize Fock matrix in terms of expectation values
+so that we can apply the robust Wick's theorem at the very end.
+
+\section{Definitions}
+
+The Bogoliubov quasiparticle annihilation operators
+$\beta_p$ are defined in terms of
+fermionic particle operators $c^\dag_q$ and $c_q$
+through a Bogoliubov transformation:
+\begin{equation}
+  \beta_p
+  = \sum_{q=1}^M \left(U^*_{qp} c_q + V^*_{qp} c^\dag_q\right)
+\end{equation}
+for $1 \leq q \leq M$, where $M$ is the number of spinorbitals.
+In this note, I follow Blaizot and Ripka and define
+\begin{subequations}
+\begin{align}
+  \mathscr{B}_p
+  &= \beta_p,\\
+  \mathscr{B}_{M+p}
+  &= \beta^\dag_p,
+\end{align}
+\end{subequations}
+and
+\begin{subequations}
+\begin{align}
+  \mathscr{C}_p
+  &= c_p,\\
+  \mathscr{C}_{M+p}
+  &= c^\dag_p.
+\end{align}
+\end{subequations}
+We may then write the Bogoliubov transformation as
+\begin{equation}
+  \label{eq:bogoliubov}
+  \mathscr{B}_P^\dag = \sum_{Q=1}^{2M} \mathscr{C}_Q^\dag \mathcal{W}_{QP}
+\end{equation}
+for $1 \leq P \leq 2M$, where
+\begin{equation}
+  \mathcal{W} =
+  \begin{pmatrix}
+    U & V^*\\
+    V & U^*
+  \end{pmatrix}
+\end{equation}
+is unitary.
+
+Let
+\begin{equation}
+  \label{eq:hfb}
+  \ket{0} = \prod_{p=1}^M \beta_p \ket{-},
+\end{equation}
+and
+\begin{equation}
+  \ket{Z} = \exp(\frac{1}{2} \sum_{pq} Z_{pq} \beta^\dag_p \beta^\dag_q) \ket{0},
+\end{equation}
+where the Thouless matrix $Z$ is antisymmetric.
+
+
+\section{Generalized Brillouin Condition}
+
+We write the PHFB energy as a function of $Z$:
+\begin{equation}
+  E(Z) =
+  \frac{\braket{Z|H\mathcal{P}|Z}}{\braket{Z|\mathcal{P}|Z}},
+\end{equation}
+where $\mathcal{P}$ is a symmetry projector.
+Stationarity implies
+\begin{equation}
+  \label{eq:stationarity}
+  \left.\frac{\partial E}{\partial Z^*_{pq}}\right|_{Z=0}
+  = \frac{\braket{0|\beta_q \beta_p (H - E)\mathcal{P}|0}}{\braket{0|\mathcal{P}|0}}
+  = 0,
+\end{equation}
+where I followed the convention and took the Wirtinger derivative with respect to $Z^*$.
+(TODO: Need to explain how the derivative is difined and what the independent variables
+are in $Z$. This will explain whether we have $1/2$ or not.)
+\begin{equation}
+  \label{eq:brillouin}
+  \braket{0|\beta_q \beta_p (H - E)\mathcal{P}|0} = 0
+\end{equation}
+is referred to as the generalized Brillouin condition.
+
+Note that we have assumed that
+\begin{equation}
+  \braket{0|\mathcal{P}|0} \neq 0.
+\end{equation}
+This is typically true because $\mathcal{P}$ is written as a linear combination of rotation operators,
+even if $\braket{0|\mathcal{R}(g)|0} = 0$ for a certain $g$.
+Moreover, for the symmetry operator $\mathcal{O}$ corresponding to $\mathcal{P}$,
+we may constrain $\braket{0|\mathcal{O}|0}$ to the correct value to ensure that
+$\mathcal{P} \ket{0} \neq 0$.
+For JW-transformed Hamiltonians, the JW string does not show up in the denominator
+so we don't have to worry about it.
+
+TODO: Need to distinguish the formalism here from the generalized Brillouin condition
+by Levy and Berthier; see \cite{Kutzelnigg1979}.
+
+\section{Constructing the Generalized Fock Matrix}
+
+Let us first construct the generalized Fock matrix, denoted by $\tilde{\mathcal{F}}$,
+in the $\mathscr{B}$ basis. We start by rewriting $1/2$ times the left-hand-side of
+Equation~\eqref{eq:brillouin} as
+\begin{align}
+  \label{eq:brillouin2}
+  \tilde{\mathcal{F}}_{p,M+q}
+  = \frac{1}{2} \braket{0|\mathscr{B}^\dag_{M+q} \mathscr{B}_p \tilde{H}|0}
+  = \frac{1}{2} \braket{0|\{[\mathscr{B}_p, \tilde{H}], \mathscr{B}^\dag_{M+q}\}|0},
+\end{align}
+where $1 \leq p, q \leq M$ and
+\begin{equation}
+  \tilde{H} = \mathcal{P} (H - E) \mathcal{P}.
+\end{equation}
+We may now extend Equation~\eqref{eq:brillouin2} to the full matrix:
+\begin{equation}
+  \tilde{\mathcal{F}}_{PQ}
+  = \frac{1}{2} \braket{0|\{[\mathscr{B}_P, \tilde{H}], \mathscr{B}^\dag_Q\}|0},
+\end{equation}
+for $1 \leq P, Q \leq 2M$. And it is readily verified that $\tilde{\mathcal{F}}$ is Hermitian.
+
+The generalized Brillouin condition is satisfied iff
+\begin{equation}
+  \tilde{\mathcal{F}}
+  = \begin{pmatrix}
+    \tilde{F} & \\
+              & -\tilde{F}^*
+  \end{pmatrix},
+\end{equation}
+where
+\begin{equation}
+  \tilde{F}_{pq}
+  = \frac{1}{2} \braket{0|\{[\beta_p, \tilde{H}], \beta^\dag_q\}|0}
+  = \frac{1}{2} \left(
+    \braket{0|\beta_p \tilde{H} \beta^\dag_q|0}
+    - \braket{0|\tilde{H}|0}
+  \right)
+  = \frac{1}{2} \braket{0|\beta_p \tilde{H} \beta^\dag_q|0}.
+\end{equation}
+Since $\tilde{F}$ is Hermitian, we can always diagonalize it by
+\begin{equation}
+  \label{eq:diag_Ftilde}
+  \tilde{F} = C \epsilon C^\dag,
+\end{equation}
+where $\epsilon$ is a real diagonal matrix.
+The diagonalization is equivalent to the basis transformation
+\begin{equation}
+  \beta^\dag_p \mapsto \sum_{q=1}^M C_{qp} \beta^\dag_q.
+\end{equation}
+Note that the Bogoliubov vacuum state $\ket{0}$ defined in Equaiton~\eqref{eq:hfb}
+does not change under this basis transformation up to a physically inconsequential
+phase factor.
+Without loss of generality, we hereafter assume $\tilde{F}$ is already diagonal,
+i.e.,
+\begin{equation}
+  \tilde{\mathcal{F}} 
+  = \begin{pmatrix}
+    \tilde{F} & \\
+              & -\tilde{F}^*
+  \end{pmatrix}
+  = \begin{pmatrix}
+    \epsilon & \\
+             & -\epsilon
+  \end{pmatrix}.
+\end{equation}
+
+We now transform the generalized Fock matrix back to the $\mathscr{C}$ basis using
+Equation~\eqref{eq:bogoliubov}:
+\begin{equation}
+  \tilde{\mathcal{F}} = \mathcal{W}^\dag \mathcal{F} \mathcal{W},
+\end{equation}
+where
+\begin{equation}
+  \label{eq:gen_fock_phfb}
+  \mathcal{F}_{PQ}
+  = \frac{1}{2} \braket{0|\{[\mathscr{C}_P, \tilde{H}], \mathscr{C}^\dag_Q\}|0},
+\end{equation}
+or equivalently,
+\begin{equation}
+  \label{eq:gen_fock}
+  \mathcal{F}
+  = \begin{pmatrix}
+    F & \Delta\\
+    -\Delta^* & -F^*
+  \end{pmatrix},
+\end{equation}
+where
+\begin{subequations}
+\label{eq:gen_fock2}
+\begin{align}
+  \label{eq:gen_fock_phf}
+  F_{pq}
+  &= \frac{1}{2} \braket{0|\{[c_p, \tilde{H}], c^\dag_q\}|0},\\
+  \Delta_{pq}
+  &= \frac{1}{2} \braket{0|\{[c_p, \tilde{H}], c_q\}|0}.
+\end{align}
+\end{subequations}
+Again, one can readily show that $F$ is Hermitian and $\Delta$ is antisymmetric.
+$\mathcal{F}$ is the generalized Fock matrix that we have been looking for.
+
+(TODO: Better write
+\begin{equation}
+  \mathcal{F}_{PQ}
+  = \frac{1}{2} \braket{0|\{[\mathscr{C}_P, \tilde{H}], \mathscr{C}^\dag_Q\}|0}
+\end{equation}
+and
+\begin{subequations}
+\begin{align}
+  F_p^q
+  &= \frac{1}{2} \braket{0|\{[c_p, \tilde{H}], c^\dag_q\}|0},\\
+  \Delta_{pq}
+  &= \frac{1}{2} \braket{0|\{[c_p, \tilde{H}], c_q\}|0}.
+\end{align}
+\end{subequations}
+)
+
+We see that the generalized Brillouin condition is satisfied once we diagonalize $\mathcal{F}$
+via the PHFB SCF equation,
+\begin{equation}
+  \label{eq:phfb_scf}
+  \mathcal{F} \mathcal{W} = \mathcal{W} \tilde{\mathcal{F}}
+  = \mathcal{W}
+  \begin{pmatrix}
+    \epsilon & \\
+     & -\epsilon
+  \end{pmatrix},
+\end{equation}
+where diagonal elements of $\epsilon$ can be identified as quasiparticle energies.
+Equation~\eqref{eq:phfb_scf} reduces to the HFB SCF equation in the absence of
+the projection operator. Note also that
+we have the freedom to choose the $C$ matrix in Equation~\eqref{eq:diag_Ftilde},
+which corresponds to the gauge invariance of the Bogoliubov amplitude $\mathcal{W}$. 
+This is consistent with the Bloch--Messiah decomposition of $\mathcal{W}$.
+
+The advantage of Equation~\eqref{eq:gen_fock}, or Equation~\eqref{eq:gen_fock2},
+is that it is compatible with  the robust Wick's theorem.
+To see this, we expand the commutator and anticommutator:
+\begin{subequations}
+\label{eq:gen_fock3}
+\begin{align}
+  \mathcal{F}_{PQ}
+  \nonumber
+  &= \frac{1}{2} \braket{0|\mathscr{C}_P (H - E) \mathcal{P} \mathscr{C}^\dag_Q|0}
+  - \frac{1}{2} \braket{0|\mathscr{C}^\dag_Q (H - E) \mathcal{P} \mathscr{C}_P|0}\\
+  &\quad
+  + \frac{1}{2} \braket{0|\mathscr{C}^\dag_Q \mathscr{C}_P (H - E) \mathcal{P}|0}
+  - \frac{1}{2} \braket{0|(H - E) \mathcal{P} \mathscr{C}_P \mathscr{C}^\dag_Q|0}\\
+  \nonumber
+  &= \frac{1}{2} \braket{0|\mathscr{C}_P (H - E) \mathcal{P} \mathscr{C}^\dag_Q|0}
+  - \frac{1}{2} \braket{0|\mathscr{C}^\dag_Q (H - E) \mathcal{P} \mathscr{C}_P|0}\\
+  &\quad
+  + \frac{1}{2} \braket{0|\mathscr{C}^\dag_Q \mathscr{C}_P (H - E) \mathcal{P}|0}
+  + \frac{1}{2} \braket{0|(H - E) \mathcal{P} \mathscr{C}^\dag_Q \mathscr{C}_P|0},
+\end{align}
+\end{subequations}
+where I have used Brillouin condition.
+Explicitly, we have
+\begin{subequations}
+\begin{align}
+  \label{eq:fock_def}
+  F_{pq}
+  \nonumber
+  &= \frac{1}{2} \braket{0|c_p (H - E) \mathcal{P} c^\dag_q|0}
+  - \frac{1}{2} \braket{0|c^\dag_q (H - E) \mathcal{P} c_p|0}\\
+  &\quad+ \frac{1}{2} \left(
+    \braket{0|c^\dag_q c_p (H - E) \mathcal{P}|0}
+    + h.c.
+  \right)\\
+  %
+  \Delta_{pq}
+  \nonumber
+  &= \frac{1}{2} \braket{0|c_p (H - E) \mathcal{P} c_q|0}
+  - \frac{1}{2} \braket{0|c_q (H - E) \mathcal{P} c_p|0}\\
+  &\quad + \frac{1}{2} \braket{0|c_q c_p (H - E) \mathcal{P}|0}
+  + \frac{1}{2} \braket{0|(H - E) \mathcal{P} c_q c_p|0}.
+\end{align}
+\end{subequations}
+
+After we write $\mathcal{P}$ as linear combination of rotation operators, each term in
+the above equation can be evaluated using the robust Wick's theorem, avoiding potential
+division-by-zero issues.
+ 
+A few remarks are in order:
+\begin{enumerate}
+  \item Since the projection operator does not (anti)commute with $\mathscr{C}_P$ ($\mathscr{C}_Q^\dag$),
+    we need to evaluate third-order reduced density matrices (3RDMs) to compute $\mathcal{F}$,
+    as opposed to the HFB case where only 2RDMs are needed.
+    This makes the problem ``more nonlinear,'' which means (i) we should do DIIS for the generalized
+    Fock matrix instead of the 1RDMs (The two are the same in HFB),
+    (ii) we should probably only turn on DIIS when we are very close to convergence,
+    and (iii) the difference density matrix algorithm for direct Fock matrix build (in AO basis)
+    becomes more complicated.
+
+    Note, however, there is already some nonlinearity in KS as opposed to HF.
+
+    Tom thinks we should still do DIIS for the 1RDMs. This should be numerically tested.
+    See also Section II.D in the augmented Roothaan--Hall (ARH) paper: \url{https://doi.org/10.1063/1.2974099}.
+  \item Note that Equation~\eqref{eq:gen_fock3} contains the PHFB energy $E$. This is
+    a consequence of PHFB being a nonorthogonal configuration interaction (NOCI) method.
+    I think this is fine, even though it again makes the PHFB SCF equation ``more nonlinear.''
+  \item The computational scaling is the same as that of HFB, despite a larger prefactor.
+    Naively, the computational cost for building $\mathcal{F}$ equals four times
+    (twice after symmetry considerations) that of
+    a Thouless gradient calculation, but many intermediate quantities can be reused, so
+    the actual cost will be less; see later remarks.
+
+    Whether the SCF is faster than direct minimization or not depends on how fast the
+    convergence is in each approach. An advantage of the SCF is that we can combine it
+    with DIIS.
+  \item This formalism also applies to a transformed Hamiltonian with JW strings.
+    To see this, we just need to consider $\tilde{H}$ as the JW-transformed Hamiltonian.
+    $\tilde{H}$ is still self-adjoint by the properties of the JW transformation.
+    If we then move all the strings to the right and write
+    \begin{equation}
+      \tilde{H} = \tilde{\tilde{H}} \phi,
+    \end{equation}
+    where $\phi$ is the JW strings, we can readily evaluate the generalized Fock matrix
+    using the robust Wick theorem.
+    We can also do PHFB in the presence of JW strings.
+
+    For 2D spin systems, extended JW is necessary. In this case, $\phi$ will be transformed
+    into a more general Thouless rotation, but it is still manageable; see our
+    first strong--weak duality paper.
+  \item This formalism can also be easily implemented in a Fock-space full CI code.
+  \item Gus: Similar strategy for constructing the generalized Fock matrix
+    has been used for Brueckner CC \cite{Gus1994Brueckner, Gus1995Brueckner}.
+  \item In \cite{robustwick}, I presented the robust Wick's theorem assuming that
+    the operator string, for which
+    we want to evaluate the matrix element, is in normal order with respect to the physical vacuum.
+    In the notation of the paper, this means
+    \begin{equation}
+      \Gamma^{(-)} = 0.
+    \end{equation}
+    However, this assumption can be lifted. Specifically, we can define
+    \begin{equation}
+      \label{eq:refactorize}
+      \tilde{\tilde{\Gamma}}^r
+      = \tilde{\Gamma}^r + \delta_{r,1}\, s_1 \Gamma^{(-)},
+    \end{equation}
+    where $s_1$ is the largest canonical value (singular value in the PHF case) of the overlap matrix.
+    Consequently,
+    \begin{equation}
+      \Gamma = \sum_r s_r^{-1} \tilde{\tilde{\Gamma}}^r,
+    \end{equation}
+    and all the results in \cite{robustwick} still apply.
+
+    More specifically, we can easily verify that
+    \begin{equation}
+      \Gamma^{(-)} = \mathcal{C}^\dag \mathcal{K}^{(-)} \mathcal{C}^*,
+    \end{equation}
+    where
+    \begin{equation}
+      \mathcal{K}^{(-)}
+      = \begin{pmatrix}
+        0 & I\\
+        -I & 0
+      \end{pmatrix}.
+    \end{equation}
+    Define
+    \begin{equation}
+      \tilde{\tilde{\mathcal{K}}}^r
+      = \tilde{K}^r + \delta_{r, 1} s_1 \mathcal{K}^{(-)}.
+    \end{equation}
+    Then we have
+    \begin{equation}
+      \tilde{\tilde{\Gamma}}^r
+      = \mathcal{C}^\dag \tilde{\tilde{\mathcal{K}}}^r \mathcal{C}^*.
+    \end{equation}
+  
+  \item Note also that we can use the structure of $\mathcal{F}$ to cut down the number
+    of matrix element evaluations by a factor of $1/4$.
+
+    Specifically, we can construct the full $\mathcal{F}$ by computing the following matrix elements only:
+    \begin{itemize}
+      \item $\braket{0|c^\dag_q c_p (H - E) \mathcal{P}|0}$,
+        $\braket{0|c_p (H - E) \mathcal{P} c_q|0}$;
+      \item $\braket{0|c_p (H - E) \mathcal{P} c^\dag_q|0}$,
+        $\braket{0|c^\dag_q (H - E) \mathcal{P} c_p|0}$ for $p \geq q$;
+      \item $\braket{0|c_q c_p (H - E) \mathcal{P}|0}$,
+        $\braket{0|(H - E) \mathcal{P} c_q c_p|0}$ for $p > q$.
+    \end{itemize}
+
+    Note that instead of computing $\braket{0|(H - E) \mathcal{P} c_q c_p|0}$,
+    it would be better to compute 
+    \begin{equation}
+      \braket{0|c^\dag_p c^\dag_q (H - E) \mathcal{P}|0}
+      = \braket{0|(H - E) \mathcal{P} c_q c_p|0}^*
+    \end{equation}
+    to avoid building
+    \begin{equation*}
+      \frac{\braket{0|c_q(g) c_q(g)|g}}{\braket{0|g}}
+    \end{equation*}
+    in our implementation.
+    
+  \item Integral direct algorithm should work perfectly since in each term there is always a $\rho(g)$
+    that contracts with the two-electron integrals. And we know from experience that direct- and
+    exchange-type contractions should be screened differently.
+\end{enumerate}
+
+\section{Projected Hartree--Fock Case}
+
+The $F$ matrix defined in Equation~\eqref{eq:gen_fock_phf} reduces to the generalized Fock matrix
+in the PHF case. To see this more clearly, we can start from the generalized Brillouin condition
+for PHF:
+\begin{equation}
+  \braket{0|a^\dag_a a_i (H - E) \mathcal{P}|0} = 0,
+\end{equation}
+where
+\begin{equation}
+  a^\dag_p = \sum_{q=1}^M c^\dag_q D_{qp}
+\end{equation}
+for $1 \leq p \leq M$, and
+\begin{equation}
+  \ket{0} = \prod_{i=1}^{N} a^\dag_i \ket{-}.
+\end{equation}
+Here, $D$ is the MO coefficient matrix and $N$ is the number of electrons.
+
+We then construct
+\begin{equation}
+  \tilde{\tilde{F}}_{ia}
+  = \frac{1}{2} \braket{0|a^\dag_a a_i \tilde{H}|0}
+  = \frac{1}{2} \braket{0|\{[a_i, \tilde{H}], a^\dag_a\}|0},
+\end{equation}
+generalize it to
+\begin{subequations}
+\label{eq:gen_fock_phf_mo}
+\begin{align}
+  \tilde{\tilde{F}}_{pq}
+  &= \frac{1}{2} \braket{0|\{[a_p, \tilde{H}], a^\dag_q\}|0}\\
+  \nonumber
+  &= \frac{1}{2} \braket{0|a_p (H - E) \mathcal{P} a^\dag_q|0}
+  - \frac{1}{2} \braket{0|a^\dag_q (H - E) \mathcal{P} a_p|0}\\
+  &\quad
+  + \frac{1}{2} \braket{0|a^\dag_q a_p (H - E) \mathcal{P}|0}
+  - \frac{1}{2} \braket{0|(H - E) \mathcal{P} a_p a^\dag_q|0}\\
+  \nonumber
+  &= \frac{1}{2} \braket{0|a_p (H - E) \mathcal{P} a^\dag_q|0}
+  - \frac{1}{2} \braket{0|a^\dag_q (H - E) \mathcal{P} a_p|0}\\
+  &\quad+ \frac{1}{2} \left(
+    \braket{0|a^\dag_q a_p (H - E) \mathcal{P}|0}
+    + h.c.
+  \right).
+\end{align}
+\end{subequations}
+The generalized Brillouin condition is satisfied iff $\tilde{\tilde{F}}$
+is occupied--occupied and virtual--virtual block diagonal.
+Again, without loss of generality, we can assume
+$\tilde{\tilde{F}}$ already diagonal, i.e., $\tilde{\tilde{F}} = \epsilon$,
+since orbital rotations within occupied--occupied and
+virtual--virtual blocks do not affact $\ket{0}$ up to a
+physically inconsequential phase factor.
+
+We now define
+\begin{subequations}
+\begin{align}
+  F_{pq}
+  &= \frac{1}{2} \braket{0|\{[c_p, \tilde{H}], c^\dag_q\}|0}\\
+  \nonumber
+  &= \frac{1}{2} \braket{0|c_p (H - E) \mathcal{P} c^\dag_q|0}
+  - \frac{1}{2} \braket{0|c^\dag_q (H - E) \mathcal{P} c_p|0}\\
+  &\quad+ \frac{1}{2} \left(
+    \braket{0|c^\dag_q c_p (H - E) \mathcal{P}|0}
+    + h.c.
+  \right).
+\end{align}
+\end{subequations}
+which is consistent with Equations~\eqref{eq:gen_fock_phf} and \eqref{eq:fock_def}.
+The PHF SCF equation is now written as
+\begin{equation}
+  F D = D \tilde{\tilde{F}} = D \epsilon.
+\end{equation}
+Again, this is now compatible with the robust Wick's theorem.
+Specifically, using the notation of the robust Wick paper, we now have
+\begin{equation}
+  \kappa^{01} = \kappa^{10} = 0,
+\end{equation}
+and correspondingly,
+\begin{equation}
+  \tilde{\kappa}^{01,r} = \tilde{\kappa}^{10,r} = 0.
+\end{equation}
+$\tilde{\rho}^{01,r}$ is defined by Equations (25a) and (S39) in \cite{robustwick}.
+
+An added benefit of this formalism is that the occupied--occupied
+and virtual--virtual blocks of this generalize Fock matrix do not vanish at convergence,
+a problem discussed in the PHF paper \cite{Carlos2012PHF}.
+This can be seen from Equation~\eqref{eq:gen_fock_phf_mo}.
+In fact, we should probably define
+\begin{equation}
+  F_{pq} \mapsto
+  \frac{F_{pq}}{\braket{0|\mathcal{P}|0}}
+\end{equation}
+in consistence with Equation~\eqref{eq:stationarity}.
+This will make the eigenvalues of $F$ more stable over the SCF iteration,
+and we can interpret them as occupied and virtual energies in the sense of
+a generalized Koopmans' theorem.
+
+
+\section{Notation}%
+\label{sec:notation}
+
+For the simplicity of notation, we define
+\begin{equation}
+  \Gamma_{PQ}(g)
+  = \frac{\braket{0|\mathscr{C}_P \mathscr{C}_Q|g}}{\braket{0|g}}
+\end{equation}
+and, in matrix form,
+\begin{equation}
+  \Gamma(g)
+  = \begin{pmatrix}
+    \gamma_{\cdot\cdot}(g) &
+    \gamma_{\cdot\phantom{\cdot}}^{\phantom{\cdot}\cdot}(g) \\
+    \gamma_{\phantom{\cdot}\cdot}^{\cdot\phantom{\cdot}}(g) &
+    \gamma^{\cdot\cdot}(g)
+  \end{pmatrix},
+\end{equation}
+where
+\begin{subequations}
+\begin{align}
+  \gamma_{pq}(g)
+  &= \frac{\braket{0|c_p c_q|g}}{\braket{0|g}},\\
+  \gamma^{p\phantom{q}}_{\phantom{p}q}(g)
+  &= \frac{\braket{0|c^\dag_p c_q|g}}{\braket{0|g}},\\
+  \gamma^{\phantom{p}q}_{p\phantom{q}}(g)
+  &= \frac{\braket{0|c_p c^\dag_q|g}}{\braket{0|g}},\\
+  \gamma^{pq}(g)
+  &= \frac{\braket{0|c^\dag_p c^\dag_q|g}}{\braket{0|g}}.
+\end{align}
+\end{subequations}
+We see that
+\begin{subequations}
+\begin{align}
+  \gamma_{pq} &= -\gamma_{qp}\\
+  \gamma^{pq} &= -\gamma^{qp}.
+\end{align}
+\end{subequations}
+This notation is an extension to that in \cite{Kutzelnigg1997} to the case of operator strings
+that are not necessarily normal ordered.
+
+We further define
+\begin{equation}
+  \bar{\Gamma}_{PQ}(g)
+  = \frac{\braket{0|\mathscr{C}_P \mathscr{C}_Q(g)|g}}{\braket{0|g}} 
+\end{equation}
+and
+\begin{subequations}
+\begin{align}
+  \bar{\gamma}_{pq}(g)
+  &= \frac{\braket{0|c_p c_q(g)|g}}{\braket{0|g}},\\
+  \bar{\gamma}^{p\phantom{q}}_{\phantom{p}q}(g)
+  &= \frac{\braket{0|c^\dag_p c_q(g)|g}}{\braket{0|g}},\\
+  \bar{\gamma}^{\phantom{p}q}_{p\phantom{q}}(g)
+  &= \frac{\braket{0|c_p c^\dag_q(g)|g}}{\braket{0|g}},\\
+  \bar{\gamma}^{pq}(g)
+  &= \frac{\braket{0|c^\dag_p c^\dag_q(g)|g}}{\braket{0|g}}.
+\end{align}
+\end{subequations}
+
+\begin{subequations}
+\begin{align}
+  h_p^q
+  &= \braket{\chi_p|h|\chi_q},\\
+  \varv_{pq}^{rs}
+  &= \braket{\chi_p \chi_q|V_{\mathrm{ee}}|\chi_r \chi_s}.
+\end{align}
+and
+\begin{equation}
+  \bar{\varv}_{pq}^{rs}
+  = \varv_{pq}^{rs} - \varv_{pq}^{sr}.
+\end{equation}
+\end{subequations}
+We see that
+\begin{equation}
+  h_p^q = h_q^{p*},
+\end{equation}
+\begin{equation}
+  \bar{\varv}_{pq}^{rs}
+  = \bar{\varv}_{rs}^{pq*},
+\end{equation}
+and
+\begin{equation}
+  \bar{\varv}_{pq}^{rs}
+  = -\bar{\varv}_{pq}^{sr}
+  = -\bar{\varv}_{qp}^{rs}
+  = \bar{\varv}_{qp}^{sr}.
+\end{equation}
+
+The \textit{ab initio} Hamiltonian is written as
+\begin{equation}
+  H
+  = h_r^s c^\dag_r c_s + \frac{1}{4} \bar{\varv}_{rs}^{tw} c^\dag_r c^\dag_s c_w c_t.
+\end{equation}
+Given $\ket{0}$, we have
+\begin{subequations}
+\begin{align}
+  E
+  &= \frac{\braket{0|H\mathcal{P}|0}}{\braket{0|\mathcal{P}|0}}\\
+  &= \xi \int d\mu(g) \braket{0|g} H(g)
+\end{align}
+\end{subequations}
+where
+\begin{equation}
+  \xi = \frac{1}{\braket{0|\mathcal{P}|0}},
+\end{equation}
+and
+\begin{subequations}
+\begin{align}
+  H(g)
+  &= h_r^s \gamma^{r\phantom{s}}_{\phantom{r}s}(g)
+  + \frac{1}{4} \bar{\varv}_{rs}^{tw} \left(
+    \gamma^{r\phantom{t}}_{\phantom{r}t}(g) \gamma^{s\phantom{w}}_{\phantom{s}w}(g)
+    - \gamma^{r\phantom{w}}_{\phantom{r}w}(g) \gamma^{s\phantom{t}}_{\phantom{s}t}(g)
+    + \gamma^{rs}(g) \gamma_{wt}(g)
+  \right)\\
+  &= h_r^s \gamma^{r\phantom{s}}_{\phantom{r}s}(g)
+  + \frac{1}{4} \bar{\varv}_{rs}^{tw} \left(
+    2 \gamma^{r\phantom{t}}_{\phantom{r}t}(g) \gamma^{s\phantom{w}}_{\phantom{s}w}(g)
+    - \gamma^{rs}(g) \gamma_{tw}(g)
+  \right)\\
+  &= (h_r^s - \frac{1}{2} \lambda^{s\phantom{r}}_{\phantom{s}r}(g))
+  \gamma^{r\phantom{s}}_{\phantom{r}s}(g)
+  - \frac{1}{4} \lambda_{rs}(g) \gamma^{rs}(g),
+\end{align}
+\end{subequations}
+where we denote
+\begin{subequations}
+\begin{align}
+  \lambda_{rs}(g)
+  &= \bar{\varv}_{rs}^{tw} \gamma_{tw}(g),\\
+  \lambda^{t\phantom{s}}_{\phantom{t}s}(g)
+  &= \bar{\varv}_{rs}^{tw} \gamma^{r\phantom{w}}_{\phantom{r}w}(g),\\
+  \lambda^{tw}(g)
+  &= \bar{\varv}_{rs}^{tw} \gamma^{rs}(g).
+\end{align}
+\end{subequations}
+It is readily seen that
+\begin{subequations}
+\begin{align}
+  \lambda_{rs}(g) &= -\lambda_{sr}(g),\\
+  \lambda^{tw}(g) &= -\lambda^{wt}(g).
+\end{align}
+\end{subequations}
+Therefore,
+\begin{subequations}
+\begin{align}
+  \nonumber
+  \quad\braket{0|c_p (H - E) \mathcal{P} c^\dag_q|0}
+  &= \int d\mu(g) \braket{0|g}
+  \Bigl(
+    \big(H(g) - E\big) \bar{\gamma}_{p\phantom{q}}^{\phantom{p}q}(g)
+    + h_r^s \gamma_{p\phantom{r}}^{\phantom{p}r}(g) \bar{\gamma}_{s\phantom{q}}^{\phantom{s}q}(g) 
+    - h_r^s \gamma_{ps}(g) \bar{\gamma}^{rq}(g)\\
+    \nonumber
+    &\hspace{8em}+ 4 \cdot \frac{1}{4}  \bar{\varv}_{rs}^{tw}
+    \gamma_{p\phantom{r}}^{\phantom{p}r}(g) 
+    \gamma^{s\phantom{w}}_{\phantom{s}w}(g) 
+    \bar{\gamma}_{t\phantom{q}}^{\phantom{t}q}(g) 
+    - 4 \cdot \frac{1}{4} \bar{\varv}_{rs}^{tw}
+    \gamma_{pt}(g) 
+    \gamma^{s\phantom{w}}_{\phantom{s}w}(g) 
+    \bar{\gamma}^{rq}(g)\\
+    &\hspace{8em}+ 2 \cdot \frac{1}{4} \bar{\varv}_{rs}^{tw}
+    \gamma_{p\phantom{r}}^{\phantom{p}r}(g)
+    \gamma_{wt}(g)
+    \bar{\gamma}^{sq}(g)
+    + 2 \cdot \frac{1}{4} \bar{\varv}_{rs}^{tw}
+    \gamma^{rs}(g)
+    \gamma_{pw}(g)
+    \bar{\gamma}_{t\phantom{q}}^{\phantom{t}q}(g)
+  \Bigr)\\
+  \nonumber
+  &= \int d\mu(g) \braket{0|g}
+  \Bigl(
+    \big(H(g) - E\big) \bar{\gamma}_{p\phantom{q}}^{\phantom{p}q}(g)
+    + h_r^s \gamma_{p\phantom{r}}^{\phantom{p}r}(g) \bar{\gamma}_{s\phantom{q}}^{\phantom{s}q}(g) 
+    - h_r^s \gamma_{ps}(g) \bar{\gamma}^{rq}(g)\\
+    \nonumber
+    &\hspace{8em}- \lambda^{t\phantom{r}}_{\phantom{t}r}(g) 
+    \gamma_{p\phantom{r}}^{\phantom{p}r}(g) \bar{\gamma}_{t\phantom{q}}^{\phantom{t}q}(g)
+    + \lambda^{t\phantom{r}}_{\phantom{t}r}(g) 
+    \gamma_{pt}(g) \bar{\gamma}^{rq}(g)\\
+    &\hspace{8em}+ \frac{1}{2} \lambda_{rs}(g)
+    \gamma_{p\phantom{s}}^{\phantom{p}s}(g)
+    \bar{\gamma}^{rq}(g)
+    + \frac{1}{2} \lambda^{tw}(g)
+    \gamma_{pw}(g)
+    \bar{\gamma}_{t\phantom{q}}^{\phantom{t}q}(g)
+  \Bigr)\\
+  \nonumber
+  &= \int d\mu(g) \braket{0|g}
+  \Biggl(
+    \big(H(g) - E\big) \bar{\gamma}_{p\phantom{q}}^{\phantom{p}q}(g)\\
+    \nonumber
+    &\hspace{8em}
+    + \left(
+      \big(h_r^s - \lambda^{s\phantom{r}}_{\phantom{s}r}(g)\big)
+      \bar{\gamma}_{s\phantom{q}}^{\phantom{s}q}(g)
+      - \frac{1}{2} \lambda_{rs}(g) \bar{\gamma}^{sq}(g)
+    \right)
+    \gamma_{p\phantom{r}}^{\phantom{p}r}(g)\\
+    &\hspace{8em}
+    - \left(
+      \big(h_r^s - \lambda^{s\phantom{r}}_{\phantom{s}r}(g)\big)
+      \bar{\gamma}^{rq}(g)
+      - \frac{1}{2} \lambda^{rs}(g) \bar{\gamma}_{r\phantom{q}}^{\phantom{r}q}(g)
+    \right)
+    \gamma_{ps}(g)
+  \Biggr)
+\end{align}
+\end{subequations}
+Note that $\bar{\gamma}_{p\phantom{q}}^{\phantom{p}q}(g)$ is disconnected,
+signaling the size-nonextensivity of PHF(B). Yet, in the HF case, this term
+vanishes as $\big(H(g) - E\big)$ vanishes, which is consistent with the
+size-extensivity of the mean-field approximation.
+However, is it possible that the $\bar{\gamma}_{p\phantom{q}}^{\phantom{p}q}(g)$
+term also vanishes in the PHF(B) case at convergence?
+Unlikely, but we should test it numerically.
+If the answer turns out to be yes, can we prove some sort of
+linked diagram theorem for PHF(B)?
+
+
+
+\bibliographystyle{nsf}
+\bibliography{ref}
+
+\end{document}
